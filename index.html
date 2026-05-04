@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Monitoring Jamur & PLTS</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+  <style>
+    body {
+      font-family: Arial;
+      text-align: center;
+      background: #0f172a;
+      color: white;
+    }
+    .card {
+      background: #1e293b;
+      padding: 20px;
+      margin: 10px;
+      border-radius: 15px;
+      display: inline-block;
+      width: 200px;
+    }
+    button {
+      padding: 15px;
+      margin: 10px;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    .on { background: green; color: white; }
+    .off { background: red; color: white; }
+  </style>
+</head>
+
+<body>
+
+<h1>🌱 Monitoring Jamur & PLTS</h1>
+
+<div class="card">
+  <h3>Suhu</h3>
+  <h2 id="suhu">-- °C</h2>
+</div>
+
+<div class="card">
+  <h3>Kelembapan</h3>
+  <h2 id="hum">-- %</h2>
+</div>
+
+<div class="card">
+  <h3>Tegangan PLTS</h3>
+  <h2 id="volt">-- V</h2>
+</div>
+
+<br>
+
+<button class="on" onclick="pompaON()">Pompa ON</button>
+<button class="off" onclick="pompaOFF()">Pompa OFF</button>
+
+<script>
+  // 🔥 GANTI DENGAN CONFIG FIREBASE KAMU
+  var firebaseConfig = {
+    apiKey: "AIzaSyC8ixplzCptbSTNfyprSlPvaVycSRgvybM",
+  authDomain: "web-jamur-pintar.firebaseapp.com",
+  databaseURL: "https://web-jamur-pintar-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "web-jamur-pintar",
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  var db = firebase.database();
+
+  // MONITOR DATA
+  db.ref("sensor").on("value", function(snapshot) {
+    document.getElementById("suhu").innerText = snapshot.val().suhu + " °C";
+    document.getElementById("hum").innerText = snapshot.val().kelembapan + " %";
+    document.getElementById("volt").innerText = snapshot.val().tegangan + " V";
+  });
+
+  // KONTROL POMPA
+  function pompaON() {
+    db.ref("kontrol").set({
+      pompa: 1
+    });
+  }
+
+  function pompaOFF() {
+    db.ref("kontrol").set({
+      pompa: 0
+    });
+  }
+</script>
+
+</body>
+</html>
