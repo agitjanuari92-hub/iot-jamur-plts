@@ -3,6 +3,9 @@
 <head>
   <title>Monitoring Jamur & PLTS</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   
   <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
@@ -33,6 +36,11 @@
     }
     .on { background: green; color: white; }
     .off { background: red; color: white; }
+
+    canvas {
+      max-width: 90%;
+      margin-top: 20px;
+    }
   </style>
 </head>
 
@@ -60,36 +68,103 @@
 <button class="on" onclick="pompaON()">Pompa ON</button>
 <button class="off" onclick="pompaOFF()">Pompa OFF</button>
 
+<!-- ✅ GRAFIK -->
+<canvas id="myChart"></canvas>
+
 <script>
-  // 🔥 GANTI DENGAN CONFIG FIREBASE KAMU
+  // 🔥 CONFIG FIREBASE (SUDAH BENAR)
   var firebaseConfig = {
     apiKey: "AIzaSyC8ixplzCptbSTNfyprSlPvaVycSRgvybM",
-  authDomain: "web-jamur-pintar.firebaseapp.com",
-  databaseURL: "https://web-jamur-pintar-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "web-jamur-pintar",
+    authDomain: "web-jamur-pintar.firebaseapp.com",
+    databaseURL: "https://web-jamur-pintar-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "web-jamur-pintar",
   };
 
   firebase.initializeApp(firebaseConfig);
   var db = firebase.database();
 
-  // MONITOR DATA
-  db.ref("sensor").on("value", function(snapshot) {
-    document.getElementById("suhu").innerText = snapshot.val().suhu + " °C";
-    document.getElementById("hum").innerText = snapshot.val().kelembapan + " %";
-    document.getElementById("volt").innerText = snapshot.val().tegangan + " V";
+  // =========================
+  // 📊 SETUP GRAFIK
+  // =========================
+  var suhuData = [];
+  var humData = [];
+  var voltData = [];
+  var labels = [];
+
+  var ctx = document.getElementById('myChart').getContext('2d');
+
+  var chart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [
+        {
+          label: 'Suhu (°C)',
+          data: suhuData,
+          borderColor: 'red',
+          borderWidth: 2
+        },
+        {
+          label: 'Kelembapan (%)',
+          data: humData,
+          borderColor: 'blue',
+          borderWidth: 2
+        },
+        {
+          label: 'Tegangan (V)',
+          data: voltData,
+          borderColor: 'yellow',
+          borderWidth: 2
+        }
+      ]
+    },
+    options: {
+      responsive: true
+    }
   });
 
-  // KONTROL POMPA
+  // =========================
+  // 📡 MONITOR DATA
+  // =========================
+  db.ref("sensor").on("value", function(snapshot) {
+    var data = snapshot.val();
+
+    if (data) {
+      // tampilkan angka
+      document.getElementById("suhu").innerText = data.suhu + " °C";
+      document.getElementById("hum").innerText = data.kelembapan + " %";
+      document.getElementById("volt").innerText = data.tegangan + " V";
+
+      // waktu
+      var waktu = new Date().toLocaleTimeString();
+
+      // batasi 10 data
+      if (labels.length > 10) {
+        labels.shift();
+        suhuData.shift();
+        humData.shift();
+        voltData.shift();
+      }
+
+      // push data ke grafik
+      labels.push(waktu);
+      suhuData.push(data.suhu);
+      humData.push(data.kelembapan);
+      voltData.push(data.tegangan);
+
+      chart.update();
+    }
+  });
+
+  // =========================
+  // 🔘 KONTROL POMPA
+  // =========================
   function pompaON() {
-    db.ref("kontrol").set({
-      pompa: 1
-    });
+    db.ref("kontrol").set({ pompa: 1 });
   }
 
   function pompaOFF() {
-    db.ref("kontrol").set({
-      pompa: 0
-    });
+    db.ref("kontrol").set({ pompa: 0 });
   }
 </script>
 
