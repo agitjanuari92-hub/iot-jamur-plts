@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <meta name="theme-color" content="#0f172a">
+  <link rel="manifest" href="manifest.json">
   <title>Monitoring Jamur & PLTS</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
@@ -13,11 +15,19 @@
 
   <style>
     body {
-      font-family: Arial;
+      font-family: 'Segoe UI', Arial, sans-serif;
       text-align: center;
-      background: #0f172a;
+      background: linear-gradient(135deg, #0f172a, #1e293b);
       color: white;
+      margin: 0;
     }
+
+    h1 {
+      font-size: 28px;
+      margin: 20px 0;
+      letter-spacing: 1px;
+    }
+
     .card {
       background: #1e293b;
       padding: 20px;
@@ -25,21 +35,55 @@
       border-radius: 15px;
       display: inline-block;
       width: 200px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+      transition: all 0.3s ease;
     }
+
+    .card:hover {
+      transform: translateY(-5px) scale(1.02);
+    }
+
     button {
-      padding: 15px;
+      padding: 15px 20px;
       margin: 10px;
       border: none;
-      border-radius: 10px;
+      border-radius: 12px;
       font-size: 16px;
       cursor: pointer;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+      transition: all 0.3s ease;
     }
-    .on { background: green; color: white; }
-    .off { background: red; color: white; }
+
+    button:hover {
+      transform: scale(1.1);
+    }
+
+    .on {
+      background: linear-gradient(45deg, #16a34a, #22c55e);
+      color: white;
+    }
+
+    .off {
+      background: linear-gradient(45deg, #dc2626, #ef4444);
+      color: white;
+    }
 
     canvas {
       max-width: 90%;
       margin-top: 20px;
+      background: #1e293b;
+      border-radius: 15px;
+      padding: 10px;
+    }
+
+    @media (max-width: 600px) {
+      .card {
+        width: 90%;
+      }
+
+      button {
+        width: 80%;
+      }
     }
   </style>
 </head>
@@ -68,11 +112,10 @@
 <button class="on" onclick="pompaON()">Pompa ON</button>
 <button class="off" onclick="pompaOFF()">Pompa OFF</button>
 
-<!-- ✅ GRAFIK -->
+<!-- GRAFIK -->
 <canvas id="myChart"></canvas>
 
 <script>
-  // 🔥 CONFIG FIREBASE (SUDAH BENAR)
   var firebaseConfig = {
     apiKey: "AIzaSyC8ixplzCptbSTNfyprSlPvaVycSRgvybM",
     authDomain: "web-jamur-pintar.firebaseapp.com",
@@ -83,9 +126,6 @@
   firebase.initializeApp(firebaseConfig);
   var db = firebase.database();
 
-  // =========================
-  // 📊 SETUP GRAFIK
-  // =========================
   var suhuData = [];
   var humData = [];
   var voltData = [];
@@ -123,22 +163,16 @@
     }
   });
 
-  // =========================
-  // 📡 MONITOR DATA
-  // =========================
   db.ref("sensor").on("value", function(snapshot) {
     var data = snapshot.val();
 
     if (data) {
-      // tampilkan angka
       document.getElementById("suhu").innerText = data.suhu + " °C";
       document.getElementById("hum").innerText = data.kelembapan + " %";
       document.getElementById("volt").innerText = data.tegangan + " V";
 
-      // waktu
       var waktu = new Date().toLocaleTimeString();
 
-      // batasi 10 data
       if (labels.length > 10) {
         labels.shift();
         suhuData.shift();
@@ -146,7 +180,6 @@
         voltData.shift();
       }
 
-      // push data ke grafik
       labels.push(waktu);
       suhuData.push(data.suhu);
       humData.push(data.kelembapan);
@@ -156,9 +189,6 @@
     }
   });
 
-  // =========================
-  // 🔘 KONTROL POMPA
-  // =========================
   function pompaON() {
     db.ref("kontrol").set({ pompa: 1 });
   }
@@ -170,3 +200,5 @@
 
 </body>
 </html>
+
+
